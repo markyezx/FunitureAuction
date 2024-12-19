@@ -75,9 +75,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Cross Origin Resource Sharing
-const whitelist = [
-  "http://localhost:5173",
-];
+const whitelist = ["http://localhost:5173"];
 const corsOptions = {
   origin: (origin, callback) => {
     // allow requests with no origin (like mobile apps or curl requests)
@@ -157,6 +155,14 @@ app.use("/api/v1/post", v1PostRouter);
 const activityRoutes = require("./routes/v1/activityRoutes");
 const v1ActivityRouter = activityRoutes(io);
 app.use("/api/v1/activity", v1ActivityRouter);
+
+//? Product Endpoints
+const productRoutes = require("./routes/v1/productRoutes");
+app.use("/api/v1/products", productRoutes);
+
+// //? Order Endpoints
+const orderRoutes = require("./routes/v1/orderRoutes");
+app.use("/api/v1/orders", orderRoutes);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

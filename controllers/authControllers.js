@@ -570,7 +570,6 @@ const googleFlutterLogin = async (req, res) => {
           });
         }
       } else {
-        
         let userType = req.body.userType ? req.body.userType : "regular";
         let userData = req.body.userData ? req.body.userData : {};
 
@@ -585,7 +584,6 @@ const googleFlutterLogin = async (req, res) => {
         }
         userDataDocument.save(); // บันทึก userData
 
-        
         new user({
           user: {
             name: payload["name"],
