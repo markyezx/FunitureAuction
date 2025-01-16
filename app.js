@@ -164,6 +164,10 @@ app.use("/api/v1/products", productRoutes);
 const orderRoutes = require("./routes/v1/orderRoutes");
 app.use("/api/v1/orders", orderRoutes);
 
+// //? Auction Endpoints
+const auctionRoutes = require("./routes/v1/auctionRoutes");
+app.use("/api/v1/auctions", auctionRoutes);
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
