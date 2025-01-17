@@ -1,33 +1,16 @@
 const mongoose = require("mongoose");
 
-const bidCollectSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    auctionId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Auction",
-      required: true,
-    },
-    bidAmount: { type: Number, required: true },
-    paymentStatus: {
-      type: String,
-      required: true,
-      enum: ["pending", "completed", "failed"],
-    },
-    paymentDetails: {
-      stripePaymentId: { type: String, required: true },
-      amountCharged: { type: Number, required: true },
-      currency: { type: String, required: true },
-      paymentDate: { type: Date, default: Date.now },
-    },
+const bidCollectSchema = new mongoose.Schema({
+  auctionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Auction",
+    required: true,
   },
-  { timestamps: true }
-);
+  bidderName: { type: String, required: true },
+  bidAmount: { type: Number, required: true },
+  bidTime: { type: Date, default: Date.now },
+});
 
-const UserAuction = mongoose.model("UserAuction", bidCollectSchema);
+const BidCollect = mongoose.model("BidCollect", bidCollectSchema);
 
-module.exports = UserAuction;
+module.exports = BidCollect;
