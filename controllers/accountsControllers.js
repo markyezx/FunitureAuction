@@ -27,12 +27,10 @@ const changePassword = async (req, res) => {
   }
 
   if (req.body.password.length < 8) {
-    return res
-      .status(400)
-      .send({
-        status: "error",
-        message: "Password needs to be more than 8 characters!",
-      });
+    return res.status(400).send({
+      status: "error",
+      message: "Password needs to be more than 8 characters!",
+    });
   }
 
   const userId = req.params.user;
@@ -66,12 +64,10 @@ const changePassword = async (req, res) => {
       }
     })
     .catch((err) => {
-      res
-        .status(500)
-        .send({
-          status: "error",
-          message: `Error updating user ${userId}. Error: ${err}`,
-        });
+      res.status(500).send({
+        status: "error",
+        message: `Error updating user ${userId}. Error: ${err}`,
+      });
     });
 };
 
@@ -96,7 +92,7 @@ const resetPassword = async (req, res) => {
 
       await sendResetPasswordEmail(
         email,
-        "Request To Change Password For Healworld.me",
+        "Request To Change Password For UFA99 Auction.me",
         newTempPassword
       );
       await user.updateOne(
@@ -105,12 +101,10 @@ const resetPassword = async (req, res) => {
       );
       redis.set(`${email}-resetPassword`, "true");
 
-      await res
-        .status(200)
-        .send({
-          status: "success",
-          message: "New password has been sent to your email address.",
-        });
+      await res.status(200).send({
+        status: "success",
+        message: "New password has been sent to your email address.",
+      });
     } else {
       await res.status(404).send({
         status: "error",
@@ -145,7 +139,7 @@ const sendEmailVerification = async (req, res) => {
 
       const link = `${process.env.BASE_URL}/api/v1/accounts/verify/email?email=${email}&ref=${refKey}&token=${activationToken}`;
 
-      await sendVerifyEmail(email, "Verify Email For Healworld.me", link);
+      await sendVerifyEmail(email, "Verify Email For UFA99 Auction", link);
 
       //const accessToken = req.headers["authorization"].replace("Bearer ", "");
 
@@ -194,12 +188,10 @@ const sendPhoneVerification = async (req, res) => {
   }
 
   if (phone.length > 12) {
-    return res
-      .status(400)
-      .send({
-        status: "error",
-        message: "Phone number can not be more than 12 digits!",
-      });
+    return res.status(400).send({
+      status: "error",
+      message: "Phone number can not be more than 12 digits!",
+    });
   }
 
   try {
@@ -246,12 +238,10 @@ const sendPhoneVerification = async (req, res) => {
       })
       .catch(function (error) {
         console.log(error.data);
-        res
-          .status(500)
-          .send({
-            status: "error",
-            message: error.message || "Some error occurred while sending OTP.",
-          });
+        res.status(500).send({
+          status: "error",
+          message: error.message || "Some error occurred while sending OTP.",
+        });
       });
   } catch (err) {
     res.status(500).send({ status: "error", message: err.message });
@@ -259,68 +249,54 @@ const sendPhoneVerification = async (req, res) => {
 };
 
 const verifyEmail = async (req, res) => {
-  let email = req.query.email;
-  let ref = req.query.ref;
-  let token = req.query.token;
+  const { email, token, ref } = req.query;
 
-  if (!email) {
+  if (!email || !token || !ref) {
     return res
       .status(400)
-      .send({ status: "error", message: "Email can not be empty!" });
-  }
-
-  if (!ref) {
-    return res
-      .status(400)
-      .send({ status: "error", message: "Ref Code can not be empty!" });
-  }
-
-  if (!token) {
-    return res
-      .status(400)
-      .send({ status: "error", message: "Pin Code can not be empty!" });
+      .send({ status: "error", message: "Missing parameters." });
   }
 
   try {
-    console.log("------> user.email = ", email);
-    let findUser = await user.findOne({ "user.email": email });
+    const foundUser = await user.findOne({ "user.email": email });
+    if (!foundUser) {
+      return res
+        .status(404)
+        .send({ status: "error", message: "User not found." });
+    }
 
-    if (!findUser) {
+    const activationToken = await redis.hGetAll(email);
+    if (token !== activationToken.token || ref !== activationToken.ref) {
       return res
         .status(404)
         .send({ status: "error", message: "Code is invalid or expired." });
     }
 
-    //let activationToken = await redis.get(email);
-    let activationToken = await redis.hGetAll(email);
-
-    if (token !== activationToken.token && ref !== activationToken.ref) {
-      return res
-        .status(404)
-        .send({ status: "error", message: "Code is invalid or expired." });
-    } else {
-      await user.updateOne(
-        { "user.email": email },
-        {
+    await user.updateOne(
+      { "user.email": email },
+      {
+        $set: {
           "user.activated": true,
           "user.verified.email": true,
-          "user.verified.phone": true,
-        }
-      );
-      await redis.del(email);
+        },
+      }
+    );
 
-      //res.status(200).send({ message: 'E-mail has been successfully verified!'});
-      res.redirect("https://www.jaidee-dev.shop/emailverified");
-    }
+    await redis.del(email);
+
+    res
+      .status(200)
+      .send({
+        message: "E-mail has been successfully verified! You can now log in.",
+      });
+    res.redirect("https://mytest-eco5.onrender.com/login?verified=true");
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .send({
-        status: "error",
-        message:
-          err.message || "Some error occurred while trying to verify email.",
-      });
+    res.status(500).send({
+      status: "error",
+      message:
+        err.message || "Some error occurred while trying to verify email.",
+    });
   }
 };
 
@@ -342,12 +318,10 @@ const verifyPhone = async (req, res) => {
   }
 
   if (phone.length > 12) {
-    return res
-      .status(400)
-      .send({
-        status: "error",
-        message: "Phone number can not be more than 12 digits!",
-      });
+    return res.status(400).send({
+      status: "error",
+      message: "Phone number can not be more than 12 digits!",
+    });
   }
 
   if (!otp) {
@@ -357,12 +331,10 @@ const verifyPhone = async (req, res) => {
   }
 
   if (otp.length !== 6) {
-    return res
-      .status(400)
-      .send({
-        status: "error",
-        message: "OTP can not be more than 12 digits!",
-      });
+    return res.status(400).send({
+      status: "error",
+      message: "OTP can not be more than 12 digits!",
+    });
   }
 
   try {
@@ -379,12 +351,10 @@ const verifyPhone = async (req, res) => {
     let refCode = await redis.get(phone);
 
     if (!refCode) {
-      return res
-        .status(404)
-        .send({
-          status: "error",
-          message: "The OTP has expired, please request the OTP again.",
-        });
+      return res.status(404).send({
+        status: "error",
+        message: "The OTP has expired, please request the OTP again.",
+      });
     }
 
     const config = {
@@ -436,32 +406,26 @@ const verifyPhone = async (req, res) => {
             token: newAccessToken,
           });
         } else {
-          return res
-            .status(404)
-            .send({
-              status: "error",
-              message: "OTP is either invalid or expired.",
-            });
+          return res.status(404).send({
+            status: "error",
+            message: "OTP is either invalid or expired.",
+          });
         }
       })
       .catch(function (error) {
         console.log(error.data);
-        res
-          .status(500)
-          .send({
-            status: "error",
-            message: error.message || "Some error occurred while sending OTP.",
-          });
+        res.status(500).send({
+          status: "error",
+          message: error.message || "Some error occurred while sending OTP.",
+        });
       });
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .send({
-        status: "error",
-        message:
-          err.message || "Some error occurred while trying to verify phone.",
-      });
+    res.status(500).send({
+      status: "error",
+      message:
+        err.message || "Some error occurred while trying to verify phone.",
+    });
   }
 };
 
@@ -482,12 +446,10 @@ const verifyPhoneTemp = async (req, res) => {
   }
 
   if (phone.length > 12) {
-    return res
-      .status(400)
-      .send({
-        status: "error",
-        message: "Phone number can not be more than 12 digits!",
-      });
+    return res.status(400).send({
+      status: "error",
+      message: "Phone number can not be more than 12 digits!",
+    });
   }
 
   try {
@@ -526,13 +488,11 @@ const verifyPhoneTemp = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .send({
-        status: "error",
-        message:
-          err.message || "Some error occurred while trying to verify phone.",
-      });
+    res.status(500).send({
+      status: "error",
+      message:
+        err.message || "Some error occurred while trying to verify phone.",
+    });
   }
 };
 
@@ -788,12 +748,10 @@ const getOneAccount = async (req, res) => {
         .send({ status: "error", message: `User ID ${userId} was not found.` });
     }
   } catch (err) {
-    await res
-      .status(500)
-      .send({
-        status: "error",
-        message: err.message || `Error retrieving user ID ${userId}`,
-      });
+    await res.status(500).send({
+      status: "error",
+      message: err.message || `Error retrieving user ID ${userId}`,
+    });
   }
 };
 
@@ -840,12 +798,10 @@ const deleteOneAccount = async (req, res) => {
     })
     .then(async (data) => {
       if (!data) {
-        res
-          .status(404)
-          .send({
-            status: "error",
-            message: `Cannot delete user ID ${userId}. Maybe user was not found.`,
-          });
+        res.status(404).send({
+          status: "error",
+          message: `Cannot delete user ID ${userId}. Maybe user was not found.`,
+        });
       } else {
         const newAccessToken = jwt.sign(
           {
@@ -865,12 +821,10 @@ const deleteOneAccount = async (req, res) => {
       }
     })
     .catch((err) => {
-      res
-        .status(500)
-        .send({
-          status: "error",
-          message: `Could not delete User ID ${userId}`,
-        });
+      res.status(500).send({
+        status: "error",
+        message: `Could not delete User ID ${userId}`,
+      });
     });
 };
 

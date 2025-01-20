@@ -66,8 +66,8 @@ passport.use(
 
                 const link = `${process.env.BASE_URL}/api/v1/accounts/verify/email?email=${email}&ref=${refKey}&token=${activationToken}`;
                 console.log("link =", link);
-                await sendEmail(email, "Verify Email For JaideePOS", link);
-                
+                await sendEmail(email, "Verify Email For UFA99 Auction", link);
+
                 console.log("406 : Email has not been activated.");
                 return cb(null, false, {
                   statusCode: 406,

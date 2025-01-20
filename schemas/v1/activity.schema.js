@@ -45,7 +45,7 @@ const activitySchema = new Schema({
     end: Date,
   },
   chatRoomId: { type: mongoose.Schema.Types.ObjectId, ref: "ChatRoom" },
-  category: { type: String, default: "healworld" },
+  category: { type: String, default: "UFA99 Auction" },
   cost: { type: Number, default: 0 },
   certificate: {
     provided: { type: Boolean, default: false },

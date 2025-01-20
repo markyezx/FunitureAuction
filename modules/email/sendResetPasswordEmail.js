@@ -1,33 +1,31 @@
-const nodemailer = require('nodemailer');
-
+const nodemailer = require("nodemailer");
 
 const sendEmail = async (email, subject, text) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.MAIL_HOST,
+      port: process.env.MAIL_PORT,
+      secure: true,
+      auth: {
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
+      },
+    });
 
-    try {
-        const transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST,
-            port: process.env.MAIL_PORT,
-            secure: true,
-            auth: {
-                user: process.env.MAIL_USERNAME,
-                pass: process.env.MAIL_PASSWORD,
-            }
-        });
+    transporter.verify(function (error, success) {
+      if (error) {
+        console.log(error);
+      } else {
+        //console.log('Server is ready to take our messages');
+      }
+    });
 
-        transporter.verify(function (error, success) {
-            if (error) {
-                console.log(error);
-            } else {
-                //console.log('Server is ready to take our messages');
-            }
-        });
-
-      let html = `<!doctype html>
+    let html = `<!doctype html>
       <html>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-          <title>Healworld.me E-Mail verification</title>
+          <title>UFA99 Auction.me E-Mail verification</title>
           <style>
             @media only screen and (max-width: 620px) {
             table.body h1 {
@@ -113,7 +111,7 @@ const sendEmail = async (email, subject, text) => {
           </style>
         </head>
         <body style="background-color: #f6f6f6; font-family: sans-serif; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
-          <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">Here are the new credentials for Healworld.me</span>
+          <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">Here are the new credentials for UFA99 Auction.me</span>
           <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f6f6f6; width: 100%;" width="100%" bgcolor="#f6f6f6">
             <tr>
               <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;" valign="top">&nbsp;</td>
@@ -130,7 +128,7 @@ const sendEmail = async (email, subject, text) => {
                           <tr>
                             <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;" valign="top">
                               <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 15px;">Hi ${email},</p>
-                              <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 15px;">You have requested password reset for <span style="font-weight: bold">Healworld.me</span></p>
+                              <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 15px;">You have requested password reset for <span style="font-weight: bold">UFA99 Auction.me</span></p>
                               <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 15px;">Below are the credentials to login to your account.</p>
                               <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%;" width="100%">
                                 <tbody>
@@ -150,8 +148,8 @@ const sendEmail = async (email, subject, text) => {
                                   </tr>
                                 </tbody>
                               </table>
-                              <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 15px;">If you did not request to reset password Healworld.me, please contact support.</p>
-                              <p style="font-family: sans-serif; font-size: 14px; font-weight: bold; margin: 0; margin-bottom: 15px;">Healworld.me Team</p>
+                              <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 15px;">If you did not request to reset password UFA99 Auction.me, please contact support.</p>
+                              <p style="font-family: sans-serif; font-size: 14px; font-weight: bold; margin: 0; margin-bottom: 15px;">UFA99 Auction.me Team</p>
                             </td>
                           </tr>
                         </table>
@@ -170,29 +168,27 @@ const sendEmail = async (email, subject, text) => {
         </body>
       </html>`;
 
-        const mailOptions = {
-            from: `Healworld.me Support <${process.env.MAIL_USERNAME}>`,
-            to: email,
-            subject: subject,
-            text: text,
-            html: html
-        };
+    const mailOptions = {
+      from: `UFA99 Auction.me Support <${process.env.MAIL_USERNAME}>`,
+      to: email,
+      subject: subject,
+      text: text,
+      html: html,
+    };
 
-        await transporter.sendMail(mailOptions, function (error, info) {
-            if (error) {
-                //console.log(error)
-
-                //res.status(400).send({ message: 'Error sending mail', error: error });
-            } else {
-                //console.log('Email sent: ' + info.response);
-                //res.status(200).send({ message: 'Mail Successfully Sent' });
-            }
-        });
-
-    } catch (error) {
-        //console.log(error);
-        //res.status(500).send({ message: 'Error sending mail', error: error});
-    }
+    await transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        //console.log(error)
+        //res.status(400).send({ message: 'Error sending mail', error: error });
+      } else {
+        //console.log('Email sent: ' + info.response);
+        //res.status(200).send({ message: 'Mail Successfully Sent' });
+      }
+    });
+  } catch (error) {
+    //console.log(error);
+    //res.status(500).send({ message: 'Error sending mail', error: error});
+  }
 };
 
 module.exports = sendEmail;

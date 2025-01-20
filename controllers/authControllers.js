@@ -120,7 +120,7 @@ const register = async (req, res) => {
 
           const link = `${process.env.BASE_URL}/api/v1/accounts/verify/email?email=${email}&ref=${refKey}&token=${activationToken}`;
 
-          await sendEmail(email, "Verify Email For Healworld.me", link);
+          await sendEmail(email, "Verify Email For UFA99 Auction", link);
 
           res.status(201).send({
             status: "success",
@@ -152,146 +152,188 @@ const register = async (req, res) => {
   }
 };
 
-const login = async (req, res, next) => {
-  console.log("login function");
+// const login = async (req, res, next) => {
+//   console.log("login function");
 
-  if (!req.headers["device-fingerprint"]) {
-    return res
-      .status(401)
-      .send({ status: "error", message: "Device fingerprint is required!" });
-  }
+//   if (!req.headers["device-fingerprint"]) {
+//     return res
+//       .status(401)
+//       .send({ status: "error", message: "Device fingerprint is required!" });
+//   }
 
-  const deviceFingerprint = req.headers["device-fingerprint"];
-  const businessId = req.headers["businessid"];
+//   const deviceFingerprint = req.headers["device-fingerprint"];
+//   const businessId = req.headers["businessid"];
 
-  if (!businessId) {
-    return res
-      .status(400)
-      .send({ status: "error", message: "Business ID is required!" });
-  }
+//   if (!businessId) {
+//     return res
+//       .status(400)
+//       .send({ status: "error", message: "Business ID is required!" });
+//   }
 
-  passport.authenticate(
-    "local",
-    { session: false },
-    async (err, foundUser, info) => {
-      console.log(`login : ${foundUser}`);
-      if (err) return next(err);
+//   passport.authenticate(
+//     "local",
+//     { session: false },
+//     async (err, foundUser, info) => {
+//       console.log(`login : ${foundUser}`);
+//       if (err) return next(err);
 
-      if (foundUser) {
-        console.log("login : found user");
+//       if (foundUser) {
+//         console.log("login : found user");
 
-        const loggedInDevices = foundUser.loggedInDevices || [];
-        if (loggedInDevices.length >= 50) {
-          return res
-            .status(403)
-            .send({ status: "error", message: "Login limit exceeded." });
-        }
+//         const loggedInDevices = foundUser.loggedInDevices || [];
+//         if (loggedInDevices.length >= 50) {
+//           return res
+//             .status(403)
+//             .send({ status: "error", message: "Login limit exceeded." });
+//         }
 
-        const foundUserEmail = foundUser.user.email;
-        const foundUserId = foundUser.userId;
+//         const foundUserEmail = foundUser.user.email;
+//         const foundUserId = foundUser.userId;
 
-        const accessToken = jwt.sign(
-          {
-            userId: foundUserId,
-            name: foundUser.user.name,
-            email: foundUserEmail,
-            businessId: businessId,
-          },
-          process.env.JWT_ACCESS_TOKEN_SECRET,
-          { expiresIn: process.env.ACCESS_TOKEN_EXPIRES }
-        );
-        const refreshToken = jwt.sign(
-          {
-            userId: foundUserId,
-            name: foundUser.user.name,
-            email: foundUserEmail,
-            businessId: businessId,
-          },
-          process.env.JWT_REFRESH_TOKEN_SECRET,
-          { expiresIn: process.env.REFRESH_TOKEN_EXPIRES }
-        );
-        await redis.sAdd(
-          `Device_Fingerprint_${foundUserId}`,
-          deviceFingerprint
-        );
+//         const accessToken = jwt.sign(
+//           {
+//             userId: foundUserId,
+//             name: foundUser.user.name,
+//             email: foundUserEmail,
+//             businessId: businessId,
+//           },
+//           process.env.JWT_ACCESS_TOKEN_SECRET,
+//           { expiresIn: process.env.ACCESS_TOKEN_EXPIRES }
+//         );
+//         const refreshToken = jwt.sign(
+//           {
+//             userId: foundUserId,
+//             name: foundUser.user.name,
+//             email: foundUserEmail,
+//             businessId: businessId,
+//           },
+//           process.env.JWT_REFRESH_TOKEN_SECRET,
+//           { expiresIn: process.env.REFRESH_TOKEN_EXPIRES }
+//         );
+//         await redis.sAdd(
+//           `Device_Fingerprint_${foundUserId}`,
+//           deviceFingerprint
+//         );
 
-        redis.set(`Last_Login_${foundUserId}_${deviceFingerprint}`, Date.now());
+//         redis.set(`Last_Login_${foundUserId}_${deviceFingerprint}`, Date.now());
 
-        let length = 6,
-          charset = "0123456789",
-          refreshTokenOTP = "";
-        for (let i = 0, n = charset.length; i < length; ++i) {
-          refreshTokenOTP += charset.charAt(Math.floor(Math.random() * n));
-        }
+//         let length = 6,
+//           charset = "0123456789",
+//           refreshTokenOTP = "";
+//         for (let i = 0, n = charset.length; i < length; ++i) {
+//           refreshTokenOTP += charset.charAt(Math.floor(Math.random() * n));
+//         }
 
-        redis.set(
-          `Last_Refresh_Token_OTP_${foundUserId}_${deviceFingerprint}`,
-          refreshTokenOTP
-        );
-        redis.set(
-          `Last_Refresh_Token_${foundUserId}_${deviceFingerprint}`,
-          refreshToken
-        );
-        redis.set(
-          `Last_Access_Token_${foundUserId}_${deviceFingerprint}`,
-          accessToken
-        );
+//         redis.set(
+//           `Last_Refresh_Token_OTP_${foundUserId}_${deviceFingerprint}`,
+//           refreshTokenOTP
+//         );
+//         redis.set(
+//           `Last_Refresh_Token_${foundUserId}_${deviceFingerprint}`,
+//           refreshToken
+//         );
+//         redis.set(
+//           `Last_Access_Token_${foundUserId}_${deviceFingerprint}`,
+//           accessToken
+//         );
 
-        const deviceIndex = loggedInDevices.findIndex(
-          (device) => device.deviceFingerprint === deviceFingerprint
-        );
+//         const deviceIndex = loggedInDevices.findIndex(
+//           (device) => device.deviceFingerprint === deviceFingerprint
+//         );
 
-        if (deviceIndex === -1) {
-          await User.updateOne(
-            { _id: foundUser._id },
-            {
-              $push: {
-                loggedInDevices: {
-                  deviceFingerprint: deviceFingerprint,
-                  lastLogin: Date.now(),
-                },
-              },
-            }
-          );
-        } else {
-          loggedInDevices[deviceIndex].lastLogin = Date.now();
-          await User.updateOne(
-            { _id: foundUser._id },
-            { $set: { loggedInDevices: loggedInDevices } }
-          );
-        }
+//         if (deviceIndex === -1) {
+//           await User.updateOne(
+//             { _id: foundUser._id },
+//             {
+//               $push: {
+//                 loggedInDevices: {
+//                   deviceFingerprint: deviceFingerprint,
+//                   lastLogin: Date.now(),
+//                 },
+//               },
+//             }
+//           );
+//         } else {
+//           loggedInDevices[deviceIndex].lastLogin = Date.now();
+//           await User.updateOne(
+//             { _id: foundUser._id },
+//             { $set: { loggedInDevices: loggedInDevices } }
+//           );
+//         }
 
-        res.status(200).send({
-          status: "success",
-          message: "Successfully Login",
-          data: {
-            userId: foundUser._id,
-            user: {
-              name: foundUser.user.name,
-              email: foundUserEmail,
-              phone: foundUser.user.phone,
-              activated: foundUser.user.activated,
-              verified: {
-                email: foundUser.user.verified.email,
-                phone: foundUser.user.verified.phone,
-              },
-            },
-            imageURL: foundUser.user.imageURL,
-            tokens: {
-              accessToken: accessToken,
-              refreshToken: refreshToken,
-              refreshTokenOTP: refreshTokenOTP,
-            },
-          },
-        });
-      } else {
-        console.log("login error");
-        return res
-          .status(info.statusCode)
-          .send({ status: "error", message: info.message });
-      }
+//         res.status(200).send({
+//           status: "success",
+//           message: "Successfully Login",
+//           data: {
+//             userId: foundUser._id,
+//             user: {
+//               name: foundUser.user.name,
+//               email: foundUserEmail,
+//               phone: foundUser.user.phone,
+//               activated: foundUser.user.activated,
+//               verified: {
+//                 email: foundUser.user.verified.email,
+//                 phone: foundUser.user.verified.phone,
+//               },
+//             },
+//             imageURL: foundUser.user.imageURL,
+//             tokens: {
+//               accessToken: accessToken,
+//               refreshToken: refreshToken,
+//               refreshTokenOTP: refreshTokenOTP,
+//             },
+//           },
+//         });
+//       } else {
+//         console.log("login error");
+//         return res
+//           .status(info.statusCode)
+//           .send({ status: "error", message: info.message });
+//       }
+//     }
+//   )(req, res, next);
+// };
+
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "User not found." });
     }
-  )(req, res, next);
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "Invalid credentials." });
+    }
+
+    const accessToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_ACCESS_TOKEN_SECRET,
+      { expiresIn: "1h" }
+    );
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_REFRESH_TOKEN_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      status: "success",
+      message: "Login successful",
+      tokens: {
+        accessToken,
+        refreshToken,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
 };
 
 const logout = async (req, res, next) => {
@@ -485,7 +527,7 @@ const googleFlutterLogin = async (req, res) => {
 
           const link = `${process.env.BASE_URL}/api/v1/accounts/verify/email?email=${email}&ref=${refKey}&token=${activationToken}`;
 
-          sendEmail(email, "Verify Email For Healworld.me", link);
+          sendEmail(email, "Verify Email For UFA99 Auction", link);
 
           //return res.status(406).send(null, false, { statusCode: 406, message: 'Email has not been activated. Email activation has been sent to your email. Please activate your email first.' })
 
@@ -612,7 +654,7 @@ const googleFlutterLogin = async (req, res) => {
 
             const link = `${process.env.BASE_URL}/api/v1/accounts/verify/email?email=${email}&ref=${refKey}&token=${activationToken}`;
 
-            await sendEmail(email, "Verify Email For Healworld.me", link);
+            await sendEmail(email, "Verify Email For UFA99 Auction", link);
 
             res.status(201).send({
               status: "success",
