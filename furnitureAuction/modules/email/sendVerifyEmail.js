@@ -1,26 +1,26 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 const sendEmail = async (email, subject, text) => {
-    try {
-        const transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST,
-            port: process.env.MAIL_PORT,
-            secure: true,
-            auth: {
-                user: process.env.MAIL_USERNAME,
-                pass: process.env.MAIL_PASSWORD,
-            },
-            logger: true,
-        });
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.MAIL_HOST,
+      port: process.env.MAIL_PORT,
+      secure: true,
+      auth: {
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
+      },
+      logger: true,
+    });
 
-        transporter.verify((error, success) => {
-            if (error) {
-                console.error('Transporter Verification Error:', error);
-            }
-        });
+    transporter.verify((error, success) => {
+      if (error) {
+        console.error("Transporter Verification Error:", error);
+      }
+    });
 
-        // Updated HTML template for auction system
-        const html = `
+    // Updated HTML template for auction system
+    const html = `
             <!doctype html>
             <html>
               <head>
@@ -42,8 +42,8 @@ const sendEmail = async (email, subject, text) => {
                     }
                   }
                   .btn-primary a:hover {
-                    background-color: #28a745 !important;
-                    border-color: #28a745 !important;
+                    background-color:rgb(216, 81, 60) !important;
+                    border-color:rgb(236, 105, 53) !important;
                   }
                 </style>
               </head>
@@ -86,28 +86,28 @@ const sendEmail = async (email, subject, text) => {
             </html>
         `;
 
-        const mailOptions = {
-            from: `Auction System Support <${process.env.MAIL_USERNAME}>`,
-            to: email,
-            subject: subject,
-            text: text,
-            html: html,
-        };
+    const mailOptions = {
+      from: `Auction System Support <${process.env.MAIL_USERNAME}>`,
+      to: email,
+      subject: subject,
+      text: text,
+      html: html,
+    };
 
-        // Send email
-        await transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error('Error sending email:', error);
-                return { status: 'error', message: 'Error sending email', error };
-            } else {
-                console.log('Email sent:', info.response);
-                return { status: 'success', message: 'Mail Successfully Sent' };
-            }
-        });
-    } catch (error) {
-        console.error('Unexpected Error:', error);
-        return { status: 'error', message: 'Unexpected error occurred', error };
-    }
+    // Send email
+    await transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return { status: "error", message: "Error sending email", error };
+      } else {
+        console.log("Email sent:", info.response);
+        return { status: "success", message: "Mail Successfully Sent" };
+      }
+    });
+  } catch (error) {
+    console.error("Unexpected Error:", error);
+    return { status: "error", message: "Unexpected error occurred", error };
+  }
 };
 
 module.exports = sendEmail;

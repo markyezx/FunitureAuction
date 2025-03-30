@@ -3,7 +3,6 @@ const nodemailer = require("nodemailer");
 const sendResetPasswordEmail = async (email, subject, resetToken) => {
   const resetLink = `http://localhost:3000/resetpassword?token=${resetToken}`;
 
-
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST,
@@ -62,7 +61,7 @@ const sendResetPasswordEmail = async (email, subject, resetToken) => {
             <p>คุณได้ทำการขอรีเซ็ตรหัสผ่านสำหรับบัญชีของคุณในระบบ <b>Auction</b></p>
             <p>กรุณาคลิกปุ่มด้านล่างเพื่อตั้งรหัสผ่านใหม่</p>
             <a href="${resetLink}" class="btn" target="_blank">รีเซ็ตรหัสผ่าน</a>
-            <p class="footer">ลิงก์นี้จะหมดอายุใน 15 นาที</p>
+            <p class="footer">ลิงก์นี้จะหมดอายุใน 10 นาที</p>
             <p class="footer">หากคุณไม่ได้ร้องขอ โปรดเพิกเฉยต่ออีเมลนี้</p>
           </div>
         </body>
