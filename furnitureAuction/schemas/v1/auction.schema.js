@@ -41,7 +41,7 @@ const auctionSchema = new mongoose.Schema({
       "sofas_and_armchairs",
       "table",
       "cupboard",
-      "bad",
+      "bed",
       "counter",
       "office_furniture",
       "kitchenware_and_freezer",
